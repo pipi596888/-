@@ -1,0 +1,40 @@
+type UserInfoReq {}
+
+type UserInfoResp {
+    Id           int64   `json:"id"`
+    Username     string  `json:"username"`
+    Balance      float64 `json:"balance"`
+    CharacterCount int64  `json:"characterCount"`
+}
+
+type LoginReq {
+    Username string `json:"username"`
+    Password string `json:"password"`
+}
+
+type LoginResp {
+    Token string `json:"token"`
+    User  UserInfoResp `json:"user"`
+}
+
+type RegisterReq {
+    Username string `json:"username"`
+    Password string `json:"password"`
+    Email    string `json:"email"`
+}
+
+type RegisterResp {
+    Token string `json:"token"`
+    User  UserInfoResp `json:"user"`
+}
+
+service user-api {
+    @handler Login
+    post /api/user/login (LoginReq) returns (LoginResp)
+    
+    @handler Register
+    post /api/user/register (RegisterReq) returns (RegisterResp)
+    
+    @handler GetUserInfo
+    get /api/user/info (UserInfoReq) returns (UserInfoResp)
+}

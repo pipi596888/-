@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker run:*)",
+      "Bash(npm run type-check)",
+      "Bash(npm run build)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "mcp__minimax-vision__minimax_vision"
+    ]
+  }
+}

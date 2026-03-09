@@ -1,0 +1,11 @@
+Name: voice-api
+Host: 0.0.0.0
+Port: 8082
+
+Mysql:
+  DataSource: root:123456@tcp(localhost:3306)/tts_db?charset=utf8mb4&parseTime=true&loc=Local
+
+Redis:
+  Address: localhost:6379
+  Password: 
+  DB: 0

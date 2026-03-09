@@ -1,0 +1,21 @@
+Mysql:
+  DataSource: root:123456@tcp(localhost:3306)/tts_db?charset=utf8mb4&parseTime=true&loc=Local
+
+RabbitMQ:
+  Address: amqp://guest:guest@localhost:5672/
+
+Oss:
+  Endpoint: oss-cn-hangzhou.aliyuncs.com
+  AccessKeyId: your-access-key-id
+  AccessKeySecret: your-access-key-secret
+  BucketName: your-bucket-name
+
+Aliyun:
+  AccessKeyId: 
+  AccessKeySecret: 
+  AppKey: 
+
+Tengxun:
+  SecretId: 
+  SecretKey: 
+  AppId: 

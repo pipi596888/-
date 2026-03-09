@@ -1,0 +1,17 @@
+name: tts-project
+
+services:
+  dbhub:
+    image: bytebase/dbhub:latest
+    container_name: dbhub
+    ports:
+      - "8080:8080"
+    environment:
+      - DBHUB_LOG_LEVEL=info
+    command:
+      - --transport
+      - http
+      - --port
+      - "8080"
+      - --dsn
+      - "mysql://root:123456@host.docker.internal:3306/tts_db"

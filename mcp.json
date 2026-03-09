@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ui-ux-pro": {
+      "command": "ui-ux-pro-mcp",
+      "args": ["--stdio"]
+    },
+    "dbhub": {
+      "command": "npx",
+      "args": ["dbhub-mcp", "--url", "http://localhost:8080/mcp"]
+    }
+  }
+}

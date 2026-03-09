@@ -1,0 +1,48 @@
+type Voice {
+    Id          int64  `json:"id"`
+    Name        string `json:"name"`
+    Tone        string `json:"tone"`
+    Gender      string `json:"gender"`
+    PreviewUrl  string `json:"previewUrl,omitempty"`
+    IsDefault   bool   `json:"isDefault"`
+}
+
+type VoiceListReq {}
+
+type VoiceListResp {
+    List  []Voice `json:"list"`
+    Total int64   `json:"total"`
+}
+
+type CreateVoiceReq {
+    Name       string `json:"name"`
+    Tone       string `json:"tone"`
+    Gender     string `json:"gender"`
+    PreviewUrl string `json:"previewUrl"`
+}
+
+type CreateVoiceResp {
+    Voice Voice `json:"voice"`
+}
+
+type DeleteVoiceReq {
+    Id int64 `json:"id"`
+}
+
+type SetDefaultReq {
+    Id int64 `json:"id"`
+}
+
+service voice-api {
+    @handler GetVoiceList
+    get /api/voice/list (VoiceListReq) returns (VoiceListResp)
+    
+    @handler CreateVoice
+    post /api/voice/create (CreateVoiceReq) returns (CreateVoiceResp)
+    
+    @handler DeleteVoice
+    delete /api/voice/:id (DeleteVoiceReq) returns ()
+    
+    @handler SetDefaultVoice
+    put /api/voice/default/:id (SetDefaultReq) returns ()
+}
