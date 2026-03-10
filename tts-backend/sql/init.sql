@@ -94,7 +94,8 @@ CREATE TABLE IF NOT EXISTS `custom_voice_request` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX `idx_custom_user_id` (`user_id`),
-  INDEX `idx_custom_status` (`status`)
+  INDEX `idx_custom_status` (`status`),
+  INDEX `idx_custom_result_voice_id` (`result_voice_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Feedback / suggestions

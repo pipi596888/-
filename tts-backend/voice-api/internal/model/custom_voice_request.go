@@ -25,6 +25,7 @@ type CustomVoiceRequestModel interface {
 	FindByUserId(userId int64, limit int) ([]*CustomVoiceRequest, error)
 	FindAll(limit int) ([]*CustomVoiceRequest, error)
 	FindOne(id int64) (*CustomVoiceRequest, error)
+	FindApprovedVoiceOwners() (map[int64]int64, error)
 	DeleteByIdAndUserId(id int64, userId int64) error
 	Delete(id int64) error
 	UpdateApproval(id int64, status string, resultVoiceId sql.NullInt64, errMsg sql.NullString) error
@@ -114,6 +115,26 @@ func (m *DefaultCustomVoiceRequestModel) FindOne(id int64) (*CustomVoiceRequest,
 		return nil, err
 	}
 	return &item, nil
+}
+
+func (m *DefaultCustomVoiceRequestModel) FindApprovedVoiceOwners() (map[int64]int64, error) {
+	query := `SELECT user_id, result_voice_id FROM custom_voice_request WHERE status = 'success' AND result_voice_id IS NOT NULL`
+	rows, err := m.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	owners := make(map[int64]int64)
+	for rows.Next() {
+		var userId int64
+		var voiceId int64
+		if err := rows.Scan(&userId, &voiceId); err != nil {
+			return nil, err
+		}
+		owners[voiceId] = userId
+	}
+	return owners, nil
 }
 
 func (m *DefaultCustomVoiceRequestModel) DeleteByIdAndUserId(id int64, userId int64) error {

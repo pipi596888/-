@@ -14,11 +14,12 @@ import (
 func GetVoiceListHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logic.NewGetVoiceListLogic(r.Context(), svcCtx)
-		userId, _, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
+		userId, isAdmin, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
 		if err != nil {
 			userId = 0
+			isAdmin = false
 		}
-		resp, err := l.GetVoiceList(userId)
+		resp, err := l.GetVoiceList(userId, isAdmin)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

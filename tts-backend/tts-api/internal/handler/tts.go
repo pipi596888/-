@@ -15,7 +15,7 @@ import (
 
 func GenerateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userId, _, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
+		userId, isAdmin, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
 		if err != nil {
 			httpx.WriteJson(w, http.StatusUnauthorized, map[string]interface{}{
 				"code":    http.StatusUnauthorized,
@@ -31,8 +31,22 @@ func GenerateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		}
 
 		l := logic.NewGenerateLogic(r.Context(), svcCtx)
-		resp, err := l.Generate(&req, userId)
+		resp, err := l.Generate(&req, userId, isAdmin)
 		if err != nil {
+			if errors.Is(err, logic.ErrForbidden) {
+				httpx.WriteJson(w, http.StatusForbidden, map[string]interface{}{
+					"code":    http.StatusForbidden,
+					"message": "forbidden",
+				})
+				return
+			}
+			if errors.Is(err, logic.ErrInvalidVoice) {
+				httpx.WriteJson(w, http.StatusBadRequest, map[string]interface{}{
+					"code":    http.StatusBadRequest,
+					"message": "invalid voice",
+				})
+				return
+			}
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
 			httpx.OkJsonCtx(r.Context(), w, resp)

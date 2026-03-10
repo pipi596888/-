@@ -12,6 +12,7 @@ type ServiceContext struct {
 	Config       *config.Config
 	TaskModel    model.TtsTaskModel
 	SegmentModel model.TtsSegmentModel
+	VoiceAccess  model.VoiceAccessModel
 }
 
 func NewServiceContext(c *config.Config) *ServiceContext {
@@ -24,5 +25,6 @@ func NewServiceContext(c *config.Config) *ServiceContext {
 		Config:       c,
 		TaskModel:    model.NewTtsTaskModel(db),
 		SegmentModel: model.NewTtsSegmentModel(db),
+		VoiceAccess:  model.NewVoiceAccessModel(db),
 	}
 }

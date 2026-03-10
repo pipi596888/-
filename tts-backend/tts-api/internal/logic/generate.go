@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 
@@ -9,6 +10,8 @@ import (
 	"tts-backend/tts-api/internal/svc"
 	"tts-backend/tts-api/internal/types"
 )
+
+var ErrInvalidVoice = errors.New("invalid voice")
 
 type GenerateLogic struct {
 	ctx    context.Context
@@ -22,7 +25,21 @@ func NewGenerateLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Generate
 	}
 }
 
-func (l *GenerateLogic) Generate(req *types.GenerateReq, userId int64) (resp *types.GenerateResp, err error) {
+func (l *GenerateLogic) Generate(req *types.GenerateReq, userId int64, isAdmin bool) (resp *types.GenerateResp, err error) {
+	voiceIds := make([]int64, 0, len(req.Segments))
+	for _, seg := range req.Segments {
+		voiceIds = append(voiceIds, seg.VoiceId)
+	}
+	if err := l.svcCtx.VoiceAccess.ValidateVoiceIds(userId, isAdmin, voiceIds); err != nil {
+		if errors.Is(err, model.ErrVoiceForbidden) {
+			return nil, ErrForbidden
+		}
+		if errors.Is(err, model.ErrVoiceNotFound) || errors.Is(err, model.ErrInvalidVoiceID) {
+			return nil, ErrInvalidVoice
+		}
+		return nil, ErrInvalidVoice
+	}
+
 	taskId := uuid.New().String()
 	totalChars := 0
 	for _, seg := range req.Segments {
