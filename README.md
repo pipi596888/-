@@ -67,6 +67,11 @@ npm run dev
 - MySQL：`localhost:3306`（默认 root/root）
 - Redis：`localhost:6379`
 
+## 安全提示（重要）
+
+- **生产环境必须使用 HTTPS**：如果用 `http://` 访问前端/接口，账号密码会以明文出现在浏览器 Network 请求里，并且传输层也无法防止被中间人窃听。
+- 浏览器里“能看到自己输入/提交的密码”属于正常现象（客户端必须把凭证提交给服务端验证）。要保护传输安全，请在部署时使用 Nginx/网关为站点配置 HTTPS，再反向代理到 `user-api/voice-api/tts-api`。
+
 ## 常见问题
 
 - 端口被占用（Windows）：
