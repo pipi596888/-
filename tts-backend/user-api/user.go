@@ -10,6 +10,7 @@ import (
 	"tts-backend/user-api/internal/config"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/rest/httpx"
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -43,6 +44,18 @@ func main() {
 				Method:  http.MethodPost,
 				Path:    "/api/user/login",
 				Handler: loginHandler(&c, db),
+			},
+			{
+				Method: http.MethodGet,
+				Path:   "/api/user/public-key",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					resp, err := getPublicKey()
+					if err != nil {
+						httpx.ErrorCtx(r.Context(), w, err)
+						return
+					}
+					httpx.OkJsonCtx(r.Context(), w, resp)
+				},
 			},
 			{
 				Method:  http.MethodPost,

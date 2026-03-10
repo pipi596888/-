@@ -1,5 +1,6 @@
-﻿import { request } from '@/utils/request'
+import { request } from '@/utils/request'
 import type { User } from '@/types/api'
+import { encryptPassword } from '@/utils/passwordCipher'
 
 export interface LoginResponse {
   token: string
@@ -7,19 +8,21 @@ export interface LoginResponse {
 }
 
 export const userApi = {
-  login(username: string, password: string) {
+  async login(username: string, password: string) {
+    const passwordEncrypted = await encryptPassword(password)
     return request<LoginResponse>({
       url: '/user/login',
       method: 'POST',
-      data: { username, password },
+      data: { username, passwordEncrypted },
     })
   },
 
-  register(username: string, password: string, email: string) {
+  async register(username: string, password: string, email: string) {
+    const passwordEncrypted = await encryptPassword(password)
     return request<LoginResponse>({
       url: '/user/register',
       method: 'POST',
-      data: { username, password, email },
+      data: { username, passwordEncrypted, email },
     })
   },
 

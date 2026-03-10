@@ -25,6 +25,7 @@ type User struct {
 type LoginReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	PasswordEncrypted string `json:"passwordEncrypted"`
 }
 
 type LoginResp struct {
@@ -35,6 +36,7 @@ type LoginResp struct {
 type RegisterReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	PasswordEncrypted string `json:"passwordEncrypted"`
 	Email    string `json:"email"`
 }
 
@@ -67,6 +69,14 @@ func loginHandler(c *config.Config, db *sql.DB) http.HandlerFunc {
 			return
 		}
 		req.Username = strings.TrimSpace(req.Username)
+		if strings.TrimSpace(req.PasswordEncrypted) != "" {
+			p, err := decryptPasswordEncrypted(strings.TrimSpace(req.PasswordEncrypted))
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "invalid password")
+				return
+			}
+			req.Password = p
+		}
 
 		var user User
 		var passwordHash string
@@ -117,6 +127,14 @@ func registerHandler(c *config.Config, db *sql.DB) http.HandlerFunc {
 			return
 		}
 		req.Username = strings.TrimSpace(req.Username)
+		if strings.TrimSpace(req.PasswordEncrypted) != "" {
+			p, err := decryptPasswordEncrypted(strings.TrimSpace(req.PasswordEncrypted))
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "invalid password")
+				return
+			}
+			req.Password = p
+		}
 
 		if req.Username == "" || req.Password == "" {
 			writeJSONError(w, http.StatusBadRequest, "用户名和密码不能为空")

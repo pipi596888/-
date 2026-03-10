@@ -101,6 +101,7 @@ LIMIT ? OFFSET ?`, where)
 type AdminCreateUserReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	PasswordEncrypted string `json:"passwordEncrypted"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 	Status   string `json:"status"`
@@ -117,6 +118,14 @@ func createAdminUserHandler(db *sql.DB) http.HandlerFunc {
 		req.Email = strings.TrimSpace(req.Email)
 		req.Role = strings.TrimSpace(req.Role)
 		req.Status = strings.TrimSpace(req.Status)
+		if strings.TrimSpace(req.PasswordEncrypted) != "" {
+			p, err := decryptPasswordEncrypted(strings.TrimSpace(req.PasswordEncrypted))
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "invalid password")
+				return
+			}
+			req.Password = p
+		}
 
 		if req.Username == "" || req.Password == "" {
 			writeJSONError(w, http.StatusBadRequest, "username and password are required")
@@ -171,6 +180,7 @@ type AdminUpdateUserReq struct {
 	Role     string `json:"role"`
 	Status   string `json:"status"`
 	Password string `json:"password"`
+	PasswordEncrypted string `json:"passwordEncrypted"`
 }
 
 func updateAdminUserHandler(db *sql.DB) http.HandlerFunc {
@@ -194,6 +204,14 @@ func updateAdminUserHandler(db *sql.DB) http.HandlerFunc {
 		req.Email = strings.TrimSpace(req.Email)
 		req.Role = strings.TrimSpace(req.Role)
 		req.Status = strings.TrimSpace(req.Status)
+		if strings.TrimSpace(req.PasswordEncrypted) != "" {
+			p, err := decryptPasswordEncrypted(strings.TrimSpace(req.PasswordEncrypted))
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "invalid password")
+				return
+			}
+			req.Password = p
+		}
 
 		sets := make([]string, 0)
 		args := make([]any, 0)

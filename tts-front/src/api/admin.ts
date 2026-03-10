@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { encryptPassword } from '@/utils/passwordCipher'
 
 export type AdminUserRoleKey = 'admin' | 'engineer' | 'user'
 export type AdminUserStatusKey = 'active' | 'disabled'
@@ -53,19 +54,21 @@ export const adminApi = {
     })
   },
 
-  createUser(params: { username: string; password: string; email?: string; role: AdminUserRoleKey; status: AdminUserStatusKey }) {
+  async createUser(params: { username: string; password: string; email?: string; role: AdminUserRoleKey; status: AdminUserStatusKey }) {
+    const passwordEncrypted = await encryptPassword(params.password)
     return request<{ id: number }>({
       url: '/admin/users',
       method: 'POST',
-      data: params,
+      data: { ...params, password: undefined, passwordEncrypted },
     })
   },
 
-  updateUser(id: number, params: { username?: string; password?: string; email?: string; role?: AdminUserRoleKey; status?: AdminUserStatusKey }) {
+  async updateUser(id: number, params: { username?: string; password?: string; email?: string; role?: AdminUserRoleKey; status?: AdminUserStatusKey }) {
+    const passwordEncrypted = params.password ? await encryptPassword(params.password) : undefined
     return request<{ ok: boolean }>({
       url: `/admin/users/${id}`,
       method: 'PUT',
-      data: params,
+      data: { ...params, password: undefined, passwordEncrypted },
     })
   },
 
