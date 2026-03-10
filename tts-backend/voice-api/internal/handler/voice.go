@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"tts-backend/voice-api/internal/auth"
 	"tts-backend/voice-api/internal/logic"
 	"tts-backend/voice-api/internal/svc"
 	"tts-backend/voice-api/internal/types"
@@ -13,7 +14,11 @@ import (
 func GetVoiceListHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logic.NewGetVoiceListLogic(r.Context(), svcCtx)
-		resp, err := l.GetVoiceList()
+		userId, _, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
+		if err != nil {
+			userId = 0
+		}
+		resp, err := l.GetVoiceList(userId)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
@@ -60,14 +65,25 @@ func DeleteVoiceHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func SetDefaultVoiceHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userId, _, err := auth.ParseUserIDFromRequest(r, svcCtx.Config.JwtSecret)
+		if err != nil {
+			httpx.WriteJson(w, http.StatusUnauthorized, map[string]interface{}{"code": 401, "message": "unauthorized"})
+			return
+		}
+
 		id, ok := parseIDWithPrefix(r.URL.Path, "/api/voice/default/")
 		if !ok {
 			httpx.WriteJson(w, http.StatusBadRequest, map[string]interface{}{"code": 400, "message": "id is required"})
 			return
 		}
 
+		if _, err := svcCtx.VoiceModel.FindOne(id); err != nil {
+			httpx.WriteJson(w, http.StatusBadRequest, map[string]interface{}{"code": 400, "message": "voice not found"})
+			return
+		}
+
 		l := logic.NewSetDefaultVoiceLogic(r.Context(), svcCtx)
-		err := l.SetDefaultVoice(&types.SetDefaultReq{Id: id})
+		err = l.SetDefaultVoice(userId, &types.SetDefaultReq{Id: id})
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

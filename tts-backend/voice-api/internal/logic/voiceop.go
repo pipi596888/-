@@ -35,6 +35,6 @@ func NewSetDefaultVoiceLogic(ctx context.Context, svcCtx *svc.ServiceContext) *S
 	}
 }
 
-func (l *SetDefaultVoiceLogic) SetDefaultVoice(req *types.SetDefaultReq) error {
-	return l.svcCtx.VoiceModel.SetDefault(req.Id)
+func (l *SetDefaultVoiceLogic) SetDefaultVoice(userId int64, req *types.SetDefaultReq) error {
+	return l.svcCtx.VoiceModel.SetDefaultForUser(userId, req.Id)
 }

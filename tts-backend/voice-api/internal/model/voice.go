@@ -21,6 +21,8 @@ type VoiceModel interface {
 	FindAll() ([]*Voice, error)
 	Delete(id int64) error
 	SetDefault(id int64) error
+	SetDefaultForUser(userId int64, voiceId int64) error
+	GetDefaultForUser(userId int64) (int64, error)
 	ClearDefault() error
 }
 
@@ -78,9 +80,23 @@ func (m *DefaultVoiceModel) FindAll() ([]*Voice, error) {
 }
 
 func (m *DefaultVoiceModel) Delete(id int64) error {
-	query := `DELETE FROM voice WHERE id = ?`
-	_, err := m.db.Exec(query, id)
-	return err
+	tx, err := m.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`DELETE FROM user_voice_default WHERE voice_id = ?`, id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM voice WHERE id = ?`, id)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (m *DefaultVoiceModel) SetDefault(id int64) error {
@@ -101,6 +117,31 @@ func (m *DefaultVoiceModel) SetDefault(id int64) error {
 	}
 
 	return tx.Commit()
+}
+
+func (m *DefaultVoiceModel) SetDefaultForUser(userId int64, voiceId int64) error {
+	// upsert into user_voice_default
+	_, err := m.db.Exec(
+		`INSERT INTO user_voice_default (user_id, voice_id) VALUES (?, ?)
+		 ON DUPLICATE KEY UPDATE voice_id = VALUES(voice_id)`,
+		userId, voiceId,
+	)
+	return err
+}
+
+func (m *DefaultVoiceModel) GetDefaultForUser(userId int64) (int64, error) {
+	if userId <= 0 {
+		return 0, nil
+	}
+	var voiceId int64
+	err := m.db.QueryRow(`SELECT voice_id FROM user_voice_default WHERE user_id = ?`, userId).Scan(&voiceId)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return voiceId, nil
 }
 
 func (m *DefaultVoiceModel) ClearDefault() error {

@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS `voice` (
   INDEX `idx_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- User default voice (per user)
+CREATE TABLE IF NOT EXISTS `user_voice_default` (
+  `user_id` BIGINT PRIMARY KEY,
+  `voice_id` BIGINT NOT NULL,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_user_voice_default_voice_id` (`voice_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- TTS tasks
 CREATE TABLE IF NOT EXISTS `tts_task` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -137,6 +145,14 @@ INSERT INTO `voice` (`name`, `tone`, `gender`, `preview_url`, `is_default`)
 SELECT 'Radio Host - Dawn', 'warm', 'female', 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav', 0
 WHERE NOT EXISTS (SELECT 1 FROM `voice` v WHERE v.name = 'Radio Host - Dawn')
 LIMIT 1;
+
+-- Seed user default voice mapping (idempotent)
+INSERT INTO `user_voice_default` (`user_id`, `voice_id`)
+SELECT u.id, v.id
+FROM `user` u
+JOIN `voice` v ON v.name = 'XiaoXiao'
+WHERE u.username IN ('admin', 'demo', 'alice')
+ON DUPLICATE KEY UPDATE `voice_id` = VALUES(`voice_id`);
 
 -- Seed feedback mock data
 INSERT INTO `feedback` (`user_id`, `category`, `content`, `contact`, `status`, `reply`)

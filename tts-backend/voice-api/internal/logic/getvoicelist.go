@@ -19,21 +19,30 @@ func NewGetVoiceListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetV
 	}
 }
 
-func (l *GetVoiceListLogic) GetVoiceList() (resp *types.VoiceListResp, err error) {
+func (l *GetVoiceListLogic) GetVoiceList(userId int64) (resp *types.VoiceListResp, err error) {
 	voices, err := l.svcCtx.VoiceModel.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	defaultVoiceId, err := l.svcCtx.VoiceModel.GetDefaultForUser(userId)
 	if err != nil {
 		return nil, err
 	}
 
 	var list []types.Voice
 	for _, v := range voices {
+		isDefault := v.IsDefault
+		if defaultVoiceId > 0 {
+			isDefault = v.Id == defaultVoiceId
+		}
 		list = append(list, types.Voice{
 			Id:         v.Id,
 			Name:       v.Name,
 			Tone:       v.Tone,
 			Gender:     v.Gender,
 			PreviewUrl: v.PreviewUrl,
-			IsDefault:  v.IsDefault,
+			IsDefault:  isDefault,
 		})
 	}
 
